@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Consistency Clock</title>
+<meta name="description" content="A personal challenge countdown with a daily check-in and streak.">
+<meta name="theme-color" content="#050508">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Clock">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Chakra+Petch:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="space" id="space" aria-hidden="true"></div>
+
+<!-- loading -->
+<section class="view" id="loading" aria-live="polite">
+  <div class="pulse-ring" id="loadSpinner" aria-hidden="true"></div>
+  <p class="label" id="loadText">Loading your challenge</p>
+  <p id="loadError" hidden></p>
+  <button class="ghost" id="loadRetry" type="button" hidden>Try again</button>
+</section>
+
+<!-- sign in -->
+<section class="view" id="auth" hidden aria-labelledby="authTitle">
+  <div class="liquid" aria-hidden="true"><b></b><b></b><b></b><b></b></div>
+  <form class="setup-card" id="authForm" novalidate>
+    <div>
+      <p class="label" style="margin:0 0 12px">Consistency Clock</p>
+      <h1 id="authTitle">Sign in</h1>
+      <p class="lede" id="authLede">Your challenge, check-ins and reminders are saved to your own private account.</p>
+    </div>
+    <div class="field">
+      <label class="label" for="aEmail">Email</label>
+      <input type="email" id="aEmail" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false">
+    </div>
+    <div class="field">
+      <label class="label" for="aPassword">Password</label>
+      <input type="password" id="aPassword" autocomplete="current-password" minlength="8">
+      <p class="note" id="aPassHint" hidden>At least 8 characters.</p>
+    </div>
+    <p class="err" id="aError" role="alert"></p>
+    <p class="ok" id="aInfo" role="status"></p>
+    <button class="primary" id="aSubmit" type="submit">Sign in</button>
+    <div class="row-between">
+      <span class="note" id="aSwitchText">New here?</span>
+      <button type="button" class="ghost" id="aSwitch">Create account</button>
+    </div>
+  </form>
+</section>
+
+<!-- setup -->
+<section class="view" id="setup" hidden aria-labelledby="setupTitle">
+  <div class="liquid" aria-hidden="true"><b></b><b></b><b></b><b></b></div>
+  <form class="setup-card" id="setupForm" novalidate>
+    <div>
+      <p class="label" style="margin:0 0 12px">Consistency Clock</p>
+      <h1 id="setupTitle">Commit to one thing</h1>
+      <p class="lede">Name the challenge, set the length, and show up once a day. The clock counts down to the last second of your final day.</p>
+    </div>
+    <div class="field">
+      <label class="label" for="fName">Your name</label>
+      <input type="text" id="fName" autocomplete="given-name" maxlength="40" placeholder="Andrew">
+      <p class="err" id="eName"></p>
+    </div>
+    <div class="field">
+      <label class="label" for="fChallenge">The challenge</label>
+      <input type="text" id="fChallenge" maxlength="60" placeholder="Run 5K every morning">
+      <p class="err" id="eChallenge"></p>
+    </div>
+    <fieldset class="field">
+      <legend class="label" style="margin-bottom:8px">Length</legend>
+      <div class="durations" role="group" aria-label="Challenge length">
+        <button type="button" class="chip" data-days="30" aria-pressed="true">30</button>
+        <button type="button" class="chip" data-days="60" aria-pressed="false">60</button>
+        <button type="button" class="chip" data-days="90" aria-pressed="false">90</button>
+        <button type="button" class="chip" data-days="custom" aria-pressed="false">Custom</button>
+      </div>
+      <div id="customDaysWrap" hidden>
+        <input type="number" id="fDays" inputmode="numeric" min="1" max="3650" step="1" placeholder="45" aria-label="Custom number of days">
+        <span>days</span>
+      </div>
+      <p class="err" id="eDays"></p>
+    </fieldset>
+    <div class="field">
+      <label class="label" for="fStart">Start date</label>
+      <input type="date" id="fStart">
+      <p class="err" id="eStart"></p>
+    </div>
+    <p class="err" id="eSave" role="alert"></p>
+    <button class="primary" id="setupSubmit" type="submit">Start the clock</button>
+    <div class="row-between">
+      <span class="note" id="storeNote">Saved privately to your account.</span>
+      <button type="button" class="ghost" id="setupCancel" hidden>Cancel</button>
+    </div>
+  </form>
+</section>
+
+<!-- clock -->
+<section class="view" id="clock" hidden aria-label="Countdown">
+  <header class="topbar">
+    <div class="challenge-title">
+      <span class="label" id="cHello"></span>
+      <strong id="cTitle"></strong>
+    </div>
+    <div class="top-actions">
+      <button type="button" class="ghost" id="toHistory">History</button>
+      <button type="button" class="ghost" id="toMenu" aria-haspopup="dialog">Settings</button>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="clock-group">
+      <div class="clock-row" id="clockRow" role="timer" aria-live="off" aria-describedby="daysLeft">
+        <span class="d" data-v="0">0</span><span class="d" data-v="0">0</span><span class="colon" aria-hidden="true"><i></i><i></i></span><span class="d" data-v="0">0</span><span class="d" data-v="0">0</span><span class="colon" aria-hidden="true"><i></i><i></i></span><span class="d" data-v="0">0</span><span class="d" data-v="0">0</span>
+      </div>
+      <div class="days-left" id="daysLeft"><em id="daysNum">0</em> <span id="daysWord">DAYS</span> LEFT</div>
+    </div>
+  </div>
+
+  <footer class="bottombar">
+    <div class="stat">
+      <span class="label">Streak</span>
+      <b id="streakNum">0<small id="streakUnit">DAYS</small></b>
+    </div>
+    <div class="cta">
+      <button type="button" class="checkin" id="checkinBtn" data-s="open">Tap anywhere to check in</button>
+    </div>
+    <div class="stat right">
+      <span class="label">Today</span>
+      <span class="status-pill" id="todayPill" data-s="open">Not yet</span>
+    </div>
+  </footer>
+  <div class="halo" id="halo" aria-hidden="true"></div>
+</section>
+
+<!-- history -->
+<section class="view" id="history" hidden aria-labelledby="hTitle">
+  <div class="page">
+    <div class="row-between">
+      <span class="label" id="hHello"></span>
+      <button type="button" class="ghost" id="hBack">Back to clock</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <span class="label" id="hRange"></span>
+      <h1 id="hTitle"></h1>
+    </div>
+    <div class="summary">
+      <div><span class="label">Checked in</span><b id="hCount">0</b></div>
+      <div><span class="label">Current streak</span><b id="hStreak">0</b></div>
+      <div><span class="label">Longest streak</span><b id="hLongest">0</b></div>
+      <div><span class="label">Days missed</span><b id="hMissed">0</b></div>
+    </div>
+    <div class="legend" aria-hidden="true">
+      <span class="k-done">Checked in</span><span class="k-miss">Missed</span><span class="k-today">Today</span>
+    </div>
+    <div id="hEmpty" class="empty" hidden></div>
+    <ol class="grid" id="hGrid"></ol>
+  </div>
+</section>
+
+<!-- completion -->
+<section class="view" id="complete" hidden aria-labelledby="xTitle">
+  <div class="complete-inner">
+    <span class="label" id="xHello">Challenge complete</span>
+    <h1 id="xTitle"></h1>
+    <div class="days-left" style="margin:0">00:00:00 · <em>0</em> DAYS LEFT</div>
+    <div class="tally">
+      <div><span class="label">Length in days</span><b id="xLen">0</b></div>
+      <div><span class="label">Days checked in</span><b id="xCount">0</b></div>
+      <div><span class="label">Longest streak</span><b id="xLongest">0</b></div>
+    </div>
+    <div class="complete-actions">
+      <button type="button" class="primary" id="xNew">Start a new challenge</button>
+      <button type="button" class="ghost" id="xHistory">View history</button>
+    </div>
+  </div>
+</section>
+
+<!-- settings sheet -->
+<div class="scrim" id="settings" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sTitle">
+    <div class="row-between">
+      <h2 id="sTitle">Settings</h2>
+      <button type="button" class="ghost" id="sClose">Done</button>
+    </div>
+
+    <section class="group" aria-labelledby="rTitle">
+      <h3 class="label" id="rTitle">Daily reminder</h3>
+      <p>If you haven’t checked in by this time, you get one notification that day.</p>
+      <div class="reminder-row">
+        <label class="switch">
+          <input type="checkbox" id="rEnabled" role="switch">
+          <span>Remind me</span>
+        </label>
+        <input type="time" id="rTime" value="20:00" step="300" aria-label="Reminder time">
+      </div>
+      <p class="note" id="rStatus"></p>
+      <p class="err" id="rError" role="alert"></p>
+      <div class="actions left">
+        <button type="button" class="ghost" id="rTest">Send a test notification</button>
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="cTitle2">
+      <h3 class="label" id="cTitle2">Challenge</h3>
+      <div id="replaceIdle" class="actions left">
+        <button type="button" class="ghost" id="sReplace">Replace this challenge</button>
+      </div>
+      <div id="replaceConfirm" hidden>
+        <p>Starting over removes <strong id="sReplaceName"></strong> from the clock. Its check-ins stay in your account but won’t show here.</p>
+        <div class="actions">
+          <button type="button" class="ghost" id="sReplaceNo">Keep going</button>
+          <button type="button" class="danger" id="sReplaceYes">Set up a new challenge</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="group" aria-labelledby="aTitle2">
+      <h3 class="label" id="aTitle2">Account</h3>
+      <p class="note" id="sEmail"></p>
+      <div class="actions left">
+        <button type="button" class="ghost" id="sSignOut">Sign out</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="vendor/supabase-2.117.3.js"></script>
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
