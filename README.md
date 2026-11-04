@@ -4,6 +4,8 @@ Ein persönlicher Countdown für eine Challenge: große `HH:MM:SS`-Uhr, „N DAY
 ein Check-in pro Tag, Streak, Verlauf und eine Erinnerung, wenn du bis zur eingestellten Uhrzeit
 noch nicht eingecheckt hast.
 
+**App-Adresse:** https://andrewcarterman-ops.github.io/Habit-Tracker/ (Groß-/Kleinschreibung beachten)
+
 ## Auf dem iPhone installieren
 
 1. Öffne die App-Adresse in **Safari** (nicht in Chrome oder einer anderen App).

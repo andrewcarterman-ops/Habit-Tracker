@@ -10,7 +10,7 @@
 import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2.117.3";
 
-const SUBJECT = "https://andrewcarterman-ops.github.io/habit-tracker/";
+const SUBJECT = "https://andrewcarterman-ops.github.io/Habit-Tracker/";
 const APP_URL = "./";
 
 const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {

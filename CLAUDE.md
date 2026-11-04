@@ -4,6 +4,9 @@ A personal challenge countdown installed on iPhone as a Home Screen web app (PWA
 One person, one active challenge, one check-in per local calendar day, a streak, history,
 completion screen, and a push reminder on days without a check-in.
 
+Live at https://andrewcarterman-ops.github.io/Habit-Tracker/ (the path is case-sensitive).
+Supabase Auth Site URL must match it exactly.
+
 ## Layout
 
 - `index.html`, `styles.css`, `app.js`: the whole app. Plain HTML/CSS/JS, no build step.
